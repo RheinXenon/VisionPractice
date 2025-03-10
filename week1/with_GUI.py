@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import os
 import tkinter as tk
 from tkinter import filedialog
 from PIL import Image, ImageTk
@@ -28,7 +29,19 @@ class ImageMatcherGUI:
         
         self.query_img = None
         self.match_result_img = None
-        self.dataset = ["img1.png", "img2.png", "img3.png"]  # 替换为实际图片路径
+
+        # 设定待匹配图片的文件夹
+        self.dataset_dir = "test_dataset"  # 指定数据集文件夹
+        self.dataset = self.load_dataset_images()  # 获取所有符合要求的图片路径
+
+    def load_dataset_images(self):
+        """ 获取 test_dataset 文件夹下所有 jpg 和 png 图片路径 """
+        dataset_images = []
+        if os.path.exists(self.dataset_dir):
+            for file in os.listdir(self.dataset_dir):
+                if file.lower().endswith((".jpg", ".png")):
+                    dataset_images.append(os.path.join(self.dataset_dir, file))
+        return dataset_images
 
     def load_query_image(self):
         file_path = filedialog.askopenfilename()
@@ -77,10 +90,11 @@ class ImageMatcherGUI:
 
         # 按匹配分数排序
         score_list.sort(key=lambda x: x[1], reverse=True)
+        top_scores = score_list[:6]
 
         # 显示匹配分数列表
         result_text = f"最佳匹配: {best_img_path}\n匹配时间: {match_time:.4f}s\n\n相似度排名:\n"
-        for img_path, score in score_list:
+        for img_path, score in top_scores:
             result_text += f"{img_path}: {score} 个匹配点\n"
 
         self.label_result.config(text=result_text)
